@@ -38,15 +38,13 @@
 </div>
 
 <script>
-    const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbxRzaQ0hQllYqfXFI7zWWFYI6kt_rVKy4Ld426jRaWh3IsFBpiSNzB_aLaGptzfppPv/exec";
+    const URL_PLANILHA = "https://script.google.com/macros/s/AKfycbw1OO_NIzffDVe9vncf8oPWR-BGpcYG6tB1-YOaQAXTpK8SzkOCem33rc5vwEZTGVVw/exec";
     const MEU_EMAIL = "maike.santixta@gmail.com";
 
-    // Salvar estado ao modificar
     function autoSave() {
         localStorage.setItem('meuAppPlanner', document.getElementById('card-container').innerHTML);
     }
 
-    // Carregar estado ao abrir
     window.onload = () => {
         const salvo = localStorage.getItem('meuAppPlanner');
         if (salvo) document.getElementById('card-container').innerHTML = salvo;
