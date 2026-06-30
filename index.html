@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Luckiest+Guy&family=Schoolbell&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; font-family: sans-serif; height: 100vh; margin: 0; overflow: hidden; }
+        .card { 
+            position: absolute; top: 50px; left: 50px; width: 320px; padding: 15px; border-radius: 20px; 
+            background: white; border: 2px solid #000; resize: both; overflow: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .card-header { cursor: move; display: flex; justify-content: space-between; align-items: start; border-bottom: 1px solid #ccc; margin-bottom: 5px; }
+        .card-header h3 { font-family: 'Bungee', cursive; margin: 0; font-size: 16px; color: black; }
+        
+        .btn-close { cursor: pointer; color: red; font-weight: bold; margin-left: 10px; }
+        #btn-add { position: absolute; bottom: 30px; right: 30px; width: 60px; height: 60px; background: #dc3545; color: white; border-radius: 50%; font-size: 40px; border: none; cursor: pointer; z-index: 500; }
+        #btn-add-table { position: absolute; bottom: 30px; right: 100px; width: 60px; height: 60px; background: #28a745; color: white; border-radius: 30%; font-size: 30px; border: none; cursor: pointer; z-index: 500; }
+        
+        #widget-help { position: fixed; bottom: 20px; right: 170px; width: 50px; height: 50px; background: #17a2b8; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: move; z-index: 1000; }
+        .actions-menu { position: fixed; bottom: 80px; right: 20px; background: white; padding: 15px; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); display: none; z-index: 1001; }
+        
+        select { font-weight: bold; padding: 4px; cursor: pointer; border: 1px solid #000; border-radius: 5px; width: 100%; margin-top: 2px; }
+        .antecedencia-container { display: none; margin-top: 5px; font-size: 12px; }
+        .color-picker { width: 20px; height: 20px; cursor: pointer; border: none; background: transparent; position: absolute; bottom: 10px; right: 10px; }
+    </style>
+</head>
+<body>
+
+<button id="btn-add" onclick="createCard()">+</button>
+<button id="btn-add-table" onclick="createTableCard()">T</button>
+<div id="card-container"></div>
+
+<div id="widget-help" onmousedown="dragWidget(event)" onclick="toggleMenu()">?</div>
+<div id="cmd-menu" class="actions-menu">
+    <input type="text" id="cmd-text" placeholder="O que deseja fazer?" style="width:100%; margin-bottom:10px;">
+    <button onclick="exec('google')">🌐 Google</button>
+    <button onclick="exec('gemini')">✨ Gemini</button>
+    <button onclick="exec('whatsapp')">💬 WhatsApp</button>
+    <button onclick="exec('alexa')">🔊 Alexa</button>
+    <button onclick="exec('maps')">📍 Maps</button>
+    <button onclick="exec('waze')">🚗 Waze</button>
+</div>
+
+<script>
+    function createCard() {
+        const newCard = document.createElement('div');
+        newCard.className = 'card';
+        newCard.innerHTML = `
+            <div class="card-header" onmousedown="dragCard(event, this.parentElement)">
+                <h3 contenteditable="true">NOVO CARD</h3>
+                <div>
+                    <span class="btn-close" onclick="this.closest('.card').remove()">X</span>
+                    <div style="font-size:10px; font-weight:bold; text-align:center;">AVISO<br><input type="checkbox" onchange="toggleAntecedencia(this)"></div>
+                </div>
+            </div>
+            <p style="font-size: 14px; margin: 5px 0;">DATA: <input type="date" style="border:none;"> HORA: <input type="time" style="border:none;"></p>
+            <div class="antecedencia-container">Antecedência: <select style="width:auto;"><option>2h</option><option>4h</option><option>6h</option><option>8h</option></select></div>
+            IMPORTÂNCIA:<select onchange="this.style.backgroundColor=this.value"><option value="#28a745">Baixa</option><option value="#ffc107">Média</option><option value="#fd7e14">Alta</option></select>
+            STATUS:<select onchange="this.style.backgroundColor=this.value"><option value="#28a745">Concluído</option><option value="#ffc107">Pendente</option><option value="#dc3545">Ativo</option></select>
+            <input type="color" class="color-picker" onchange="this.parentElement.style.backgroundColor=this.value">
+        `;
+        document.getElementById('card-container').appendChild(newCard);
+    }
+
+    function createTableCard() {
+        const newCard = document.createElement('div');
+        newCard.className = 'card';
+        newCard.style.width = "400px";
+        newCard.innerHTML = `
+            <div class="card-header" onmousedown="dragCard(event, this.parentElement)">
+                <h3 contenteditable="true">EVENTOS FIXOS</h3>
+                <span class="btn-close" onclick="this.closest('.card').remove()">X</span>
+            </div>
+            <table style="width:100%; font-size:13px; border-collapse: collapse; margin-top: 10px;">
+                <tr><th style="text-align:left;">DATA</th><th style="text-align:left;">OBSERVAÇÃO</th></tr>
+                <tr>
+                    <td><input type="text" placeholder="DD/MM" style="border:none; border-bottom:1px solid #ccc; width:50px;"></td>
+                    <td><input type="text" style="border:none; border-bottom:1px solid #ccc; width:95%;"></td>
+                </tr>
+            </table>
+            <button onclick="addRow(this)" style="margin-top:10px; cursor:pointer;">+</button>
+            <input type="color" class="color-picker" onchange="this.parentElement.style.backgroundColor=this.value">
+        `;
+        document.getElementById('card-container').appendChild(newCard);
+    }
+
+    function addRow(btn) {
+        const table = btn.parentElement.querySelector('table');
+        const row = table.insertRow(-1);
+        row.innerHTML = `<td><input type="text" placeholder="DD/MM" style="border:none; border-bottom:1px solid #ccc; width:50px;"></td><td><input type="text" style="border:none; border-bottom:1px solid #ccc; width:95%;"></td>`;
+    }
+
+    function toggleAntecedencia(ch) { ch.closest('.card').querySelector('.antecedencia-container').style.display = ch.checked ? 'block' : 'none'; }
+    function toggleMenu() { const m = document.getElementById('cmd-menu'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; }
+    function exec(type) { 
+        const t = document.getElementById('cmd-text').value; 
+        const urls = { google: 'https://google.com/search?q=', gemini: 'https://gemini.google.com/app?query=', whatsapp: 'https://wa.me/?text=', alexa: 'alexa://', maps: 'https://www.google.com/maps/search/', waze: 'https://waze.com/ul?q=' }; 
+        window.open(urls[type] + encodeURIComponent(t)); 
+    }
+    function dragCard(e, c) { let sX = e.clientX - c.offsetLeft, sY = e.clientY - c.offsetTop; document.onmousemove = (e) => { c.style.left = (e.clientX - sX) + 'px'; c.style.top = (e.clientY - sY) + 'px'; }; document.onmouseup = () => document.onmousemove = null; }
+    function dragWidget(e) { let w = e.target; document.onmousemove = (e) => { w.style.left = (e.clientX - 25) + 'px'; w.style.top = (e.clientY - 25) + 'px'; w.style.right = 'auto'; w.style.bottom = 'auto'; }; document.onmouseup = () => document.onmousemove = null; }
+</script>
+</body>
+</html>
